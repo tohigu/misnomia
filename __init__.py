@@ -20,7 +20,7 @@ class MisnomiaSkill(MycroftSkill):
     # The constructor of the skill, which calls MycroftSkill's constructor
     def __init__(self):
         super(MisnomiaSkill, self).__init__(name="MisnomiaSkill")
-        
+
         # Initialize working variables used within the skill.
         self.count = 0
 
@@ -35,33 +35,33 @@ class MisnomiaSkill(MycroftSkill):
     #   'Hello world'
     #   'Howdy you great big world'
     #   'Greetings planet earth'
-    @intent_handler(IntentBuilder("").require("You").require("Hairy").require("Food"));
+    @intent_handler(IntentBuilder("").require("You").require("Hairy").require("Food"))
     def handle_you_hairy_food_intent(self, message):
         # In this case, respond by simply speaking a canned response.
         # Mycroft will randomly speak one of the lines from the file
         #    dialogs/en-us/hello.world.dialog
         self.speak_dialog("me.bang.thing")
-        
-    @intent_handler(IntentBuilder("").require("Rock").require("Sleep").require("Big"));
+
+    @intent_handler(IntentBuilder("").require("Rock").require("Sleep").require("Big"))
     def handle_you_rock_sleep_big(self, message):
         # In this case, respond by simply speaking a canned response.
         # Mycroft will randomly speak one of the lines from the file
         #    dialogs/en-us/hello.world.dialog
         self.speak_dialog("water.smelly.sun")
-        
-    @intent_handler(IntentBuilder("").require("Fire").require("Small").require("Go"));
+
+    @intent_handler(IntentBuilder("").require("Fire").require("Small").require("Go"))
     def handle_you_fire_small_go(self, message):
         # In this case, respond by simply speaking a canned response.
         # Mycroft will randomly speak one of the lines from the file
         #    dialogs/en-us/hello.world.dialog
-        self.speak_dialog("tree.cave.verisimilitude")  
-        
-    @intent_handler(IntentBuilder("").require("Wood").require("Air").require("Jupiter"));
+        self.speak_dialog("tree.cave.verisimilitude")
+
+    @intent_handler(IntentBuilder("").require("Wood").require("Air").require("Jupiter"))
     def handle_you_fire_small_go(self, message):
         # In this case, respond by simply speaking a canned response.
         # Mycroft will randomly speak one of the lines from the file
         #    dialogs/en-us/hello.world.dialog
-        self.speak_dialog("earth.stone.wake")           
+        self.speak_dialog("earth.stone.wake")
 
     # The "stop" method defines what Mycroft does when told to stop during
     # the skill's execution. In this case, since the skill's functionality
