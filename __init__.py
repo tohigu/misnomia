@@ -10,8 +10,7 @@
 from adapt.intent import IntentBuilder
 from mycroft.skills.core import MycroftSkill, intent_handler
 from mycroft.util.log import LOG
-from pythonosc import osc_message_builder
-from pythonosc import udp_client
+from OSC import OSCClient, OSCMessage
 
 # Each skill is contained within its own class, which inherits base methods
 # from the MycroftSkill class.  You extend this class as shown below.
@@ -66,9 +65,10 @@ class Misnomia(MycroftSkill):
         self.pathra_speak("earth.stone.wake")
 
     def pathra_speak(self,message):
-         client = udp_client.SimpleUDPClient("127.0.0.1", 5005)
-         client.send_message("/pathraspeak")
-         self.speak_dialog(message)
+        client = OSCClient()
+        client.connect( ("localhost", 5005) )
+        client.send( OSCMessage("/pathraspeak")
+        self.speak_dialog(message)
 
     # The "stop" method defines what Mycroft does when told to stop during
     # the skill's execution. In this case, since the skill's functionality

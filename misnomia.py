@@ -8,8 +8,7 @@
 import time
 from neopixel import *
 import argparse
-from pythonosc import dispatcher
-from pythonosc import osc_server
+from OSC import OSCServer
 
 
 
@@ -23,6 +22,7 @@ LED_BRIGHTNESS = 255     # Set to 0 for darkest and 255 for brightest
 LED_INVERT     = False   # True to invert the signal (when using NPN transistor level shift)
 LED_CHANNEL    = 0       # set to '1' for GPIOs 13, 19, 41, 45 or 53
 pathra_state = 0         # 0 => Standby 1 => speak TODO: 2 => listen 3 => unknown_fallback
+server = OSCServer( ("localhost", 5005) )
 
 #OSC handlers
 def handle_speak(unused_addr, args):
@@ -41,12 +41,16 @@ def fadeInOutRed(strip, wait_ms=50):
                 strip.setPixelColor(i, color)
                 strip.show()
                 time.sleep(wait_ms/1000.0)
+                # call user script
+                each_frame()
         for y in range(interval,0):
             color = Color(int(y,0,0))
             for i in range(strip.numPixels()):
                 strip.setPixelColor(i, color)
                 strip.show()
                 time.sleep(wait_ms/1000.0)
+                # call user script
+                each_frame()
 
 def fadeInOutWhite(strip, wait_ms=50):
     """Wipe color across display a pixel at a time."""
@@ -59,6 +63,8 @@ def fadeInOutWhite(strip, wait_ms=50):
             strip.setPixelColor(i, color)
             strip.show()
             time.sleep(wait_ms/1000.0)
+            # call user script
+            each_frame()
     for y in range(interval,0):
         color = Color(int(y,0,0))
         for i in range(strip.numPixels()):
@@ -67,6 +73,8 @@ def fadeInOutWhite(strip, wait_ms=50):
             strip.setPixelColor(i, color)
             strip.show()
             time.sleep(wait_ms/1000.0)
+            # call user script
+            each_frame()
 
 def colorWipe(strip, color, wait_ms=50):
     """Wipe color across display a pixel at a time."""
@@ -124,6 +132,35 @@ def theaterChaseRainbow(strip, wait_ms=50):
             for i in range(0, strip.numPixels(), 3):
                 strip.setPixelColor(i+q, 0)
 
+def user_callback(path, tags, args, source):
+    # which user will be determined by path:
+    # we just throw away all slashes and join together what's left
+    user = ''.join(path.split("/"))
+    # tags will contain 'fff'
+    # args is a OSCMessage with data
+    # source is where the message came from (in case you need to reply)
+    print ("Now do something with", user,args[2],args[0],1-args[1])
+
+def quit_callback(path, tags, args, source):
+    # don't do this at home (or it'll quit blender)
+    global run
+    run = False
+
+# this method of reporting timeouts only works by convention
+# that before calling handle_request() field .timed_out is
+# set to False
+def handle_timeout(self):
+    self.timed_out = True
+
+
+# user script that's called by the game engine every frame
+def each_frame():
+    # clear timed_out flag
+    server.timed_out = False
+    # handle all pending requests then return
+    while not server.timed_out:
+        server.handle_request()
+
 # Main program logic follows:
 if __name__ == '__main__':
     # Process arguments
@@ -132,16 +169,9 @@ if __name__ == '__main__':
     parser.add_argument("--ip", default="127.0.0.1", help="The ip to listen on")
     parser.add_argument("--port", type=int, default=5005, help="The port to listen on")
     args = parser.parse_args()
-
-    dispatcher = dispatcher.Dispatcher()
-    dispatcher.map("/pathraspeak", handle_speak)
-    #dispatcher.map("/volume", print_volume_handler, "Volume")
-    #dispatcher.map("/logvolume", print_compute_handler, "Log volume", math.log)
-
-    server = osc_server.ThreadingOSCUDPServer(
-      (args.ip, args.port), dispatcher)
-    print("Serving on {}".format(server.server_address))
-    server.serve_forever()
+    server.addMsgHandler( "/pathraspeak", handle_speak )
+    server.timeout = 0
+    run = True
 
     # Create NeoPixel object with appropriate configuration.
     strip = Adafruit_NeoPixel(LED_COUNT, LED_PIN, LED_FREQ_HZ, LED_DMA, LED_INVERT, LED_BRIGHTNESS, LED_CHANNEL)
@@ -154,7 +184,7 @@ if __name__ == '__main__':
 
     try:
 
-        while True:
+        # while True:
             # print ('Color wipe animations.')
             # colorWipe(strip, Color(255, 0, 0))  # Red wipe
             # colorWipe(strip, Color(0, 255, 0))  # Blue wipe
@@ -167,10 +197,17 @@ if __name__ == '__main__':
             # rainbow(strip)
             # rainbowCycle(strip)
             # theaterChaseRainbow(strip)
-            if pathra_state == 1 :
-                fadeInOutRed(strip)
-            else if pathra_state == 0:
-                fadeInOutWhite(strip)
+
+
+        # simulate a "game engine"
+        while run:
+            # do the game stuff:
+                if pathra_state == 1 :
+                    fadeInOutRed(strip)
+                else if pathra_state == 0:
+                    fadeInOutWhite(strip)
+
+server.close()
 
 
     except KeyboardInterrupt:
