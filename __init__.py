@@ -10,6 +10,8 @@
 from adapt.intent import IntentBuilder
 from mycroft.skills.core import MycroftSkill, intent_handler
 from mycroft.util.log import LOG
+from pythonosc import osc_message_builder
+from pythonosc import udp_client
 
 # Each skill is contained within its own class, which inherits base methods
 # from the MycroftSkill class.  You extend this class as shown below.
@@ -40,28 +42,33 @@ class Misnomia(MycroftSkill):
         # In this case, respond by simply speaking a canned response.
         # Mycroft will randomly speak one of the lines from the file
         #    dialogs/en-us/hello.world.dialog
-        self.speak_dialog("me.bang.thing")
+        self.pathra_speak("me.bang.thing")
 
     @intent_handler(IntentBuilder("").require("Rock").require("Sleep").require("Big"))
     def handle_rock_sleep_big_intent(self, message):
         # In this case, respond by simply speaking a canned response.
         # Mycroft will randomly speak one of the lines from the file
         #    dialogs/en-us/hello.world.dialog
-        self.speak_dialog("water.smelly.sun")
+        self.pathra_speak("water.smelly.sun")
 
     @intent_handler(IntentBuilder("").require("Fire").require("Small").require("Go"))
     def handle_fire_small_go_intent(self, message):
         # In this case, respond by simply speaking a canned response.
         # Mycroft will randomly speak one of the lines from the file
         #    dialogs/en-us/hello.world.dialog
-        self.speak_dialog("tree.cave.verisimilitude")
+        self.pathra_speak("tree.cave.verisimilitude")
 
     @intent_handler(IntentBuilder("").require("Wood").require("Air").require("Jupiter"))
     def handle_wood_air_jupiter_intent(self, message):
         # In this case, respond by simply speaking a canned response.
         # Mycroft will randomly speak one of the lines from the file
         #    dialogs/en-us/hello.world.dialog
-        self.speak_dialog("earth.stone.wake")
+        self.pathra_speak("earth.stone.wake")
+
+    def pathra_speak(self,message):
+         client = udp_client.SimpleUDPClient("127.0.0.1", 5005)
+         client.send_message("/pathraspeak")
+         self.speak_dialog(message)
 
     # The "stop" method defines what Mycroft does when told to stop during
     # the skill's execution. In this case, since the skill's functionality
