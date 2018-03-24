@@ -36,13 +36,13 @@ def fadeInOutRed(strip, wait_ms=50):
     interval = 255
     for j in range(3):
         for z in range(0,interval):
-            color = Color(int(z,0,0)
+            color = Color(int(z,0,0))
             for i in range(strip.numPixels()):
                 strip.setPixelColor(i, color)
                 strip.show()
                 time.sleep(wait_ms/1000.0)
         for y in range(interval,0):
-            color = Color(int(y,0,0)
+            color = Color(int(y,0,0))
             for i in range(strip.numPixels()):
                 strip.setPixelColor(i, color)
                 strip.show()
@@ -52,17 +52,17 @@ def fadeInOutWhite(strip, wait_ms=50):
     """Wipe color across display a pixel at a time."""
     interval = 255
     for z in range(0,interval):
-        color = Color(int(z,0,0)
+        color = Color(int(z,0,0))
         for i in range(strip.numPixels()):
-            if pathra_state = 1:
+            if pathra_state == 1:
                 fadeInOutRed()
             strip.setPixelColor(i, color)
             strip.show()
             time.sleep(wait_ms/1000.0)
     for y in range(interval,0):
-        color = Color(int(y,0,0)
+        color = Color(int(y,0,0))
         for i in range(strip.numPixels()):
-            if pathra_state = 1:
+            if pathra_state == 1:
                 fadeInOutRed()
             strip.setPixelColor(i, color)
             strip.show()
