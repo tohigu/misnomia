@@ -36,38 +36,38 @@ class Misnomia(MycroftSkill):
     #   'Hello world'
     #   'Howdy you great big world'
     #   'Greetings planet earth'
-    @intent_handler(IntentBuilder("").require("You").require("Hairy").require("Food"))
-    def handle_you_hairy_food_intent(self, message):
+    @intent_handler(IntentBuilder("").require("File").require("Reset").require("Configuration"))
+    def handle_file_reset_configuration_intent(self, message):
         # In this case, respond by simply speaking a canned response.
         # Mycroft will randomly speak one of the lines from the file
         #    dialogs/en-us/hello.world.dialog
-        self.pathra_speak("me.bang.thing")
+        self.pathra_speak("target.override.error")
 
-    @intent_handler(IntentBuilder("").require("Rock").require("Sleep").require("Big"))
-    def handle_rock_sleep_big_intent(self, message):
+    @intent_handler(IntentBuilder("").require("Request").require("Load").require("Registry"))
+    def handle_request_load_registry_intent(self, message):
         # In this case, respond by simply speaking a canned response.
         # Mycroft will randomly speak one of the lines from the file
         #    dialogs/en-us/hello.world.dialog
-        self.pathra_speak("water.smelly.sun")
+        self.pathra_speak("target.override.error")
 
-    @intent_handler(IntentBuilder("").require("Fire").require("Small").require("Go"))
-    def handle_fire_small_go_intent(self, message):
+    @intent_handler(IntentBuilder("").require("Target").require("Load").require("Configuration"))
+    def handle_target_load_configuration_intent(self, message):
         # In this case, respond by simply speaking a canned response.
         # Mycroft will randomly speak one of the lines from the file
         #    dialogs/en-us/hello.world.dialog
-        self.pathra_speak("tree.cave.verisimilitude")
+        self.pathra_speak("start.join.execution")
 
-    @intent_handler(IntentBuilder("").require("Wood").require("Air").require("Jupiter"))
-    def handle_wood_air_jupiter_intent(self, message):
+    @intent_handler(IntentBuilder("").require("Request").require("Override").require("Execution"))
+    def handle_request_override_execution_intent(self, message):
         # In this case, respond by simply speaking a canned response.
         # Mycroft will randomly speak one of the lines from the file
         #    dialogs/en-us/hello.world.dialog
-        self.pathra_speak("earth.stone.wake")
+        self.pathra_speak("end.delete.protocol")
 
     def pathra_speak(self,message):
         client = OSCClient()
         client.connect( ("localhost", 5005) )
-        client.send( OSCMessage("/pathraspeak")
+        client.send( OSCMessage("/pathraspeak"))
         self.speak_dialog(message)
 
     # The "stop" method defines what Mycroft does when told to stop during

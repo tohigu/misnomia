@@ -13,67 +13,78 @@ from OSC import OSCServer
 
 
 # LED strip configuration:
-LED_COUNT      = 60      # Number of LED pixels.
-LED_PIN        = 18      # GPIO pin connected to the pixels (18 uses PWM!).
-#LED_PIN        = 10      # GPIO pin connected to the pixels (10 uses SPI /dev/spidev0.0).
+LED_COUNT      = 16      # Number of LED pixels.
+# LED_PIN        = 18      # GPIO pin connected to the pixels (18 uses PWM!).
+LED_PIN        = 10      # GPIO pin connected to the pixels (10 uses SPI /dev/spidev0.0).
 LED_FREQ_HZ    = 800000  # LED signal frequency in hertz (usually 800khz)
 LED_DMA        = 10      # DMA channel to use for generating signal (try 10)
 LED_BRIGHTNESS = 255     # Set to 0 for darkest and 255 for brightest
 LED_INVERT     = False   # True to invert the signal (when using NPN transistor level shift)
 LED_CHANNEL    = 0       # set to '1' for GPIOs 13, 19, 41, 45 or 53
-pathra_state = 0         # 0 => Standby 1 => speak TODO: 2 => listen 3 => unknown_fallback
-server = OSCServer( ("localhost", 5005) )
+pathra_state   = 0         # 0 => Standby 1 => speak TODO: 2 => listen 3 => unknown_fallback
 
 #OSC handlers
-def handle_speak(unused_addr, args):
+def handle_speak(path, tags, args, source):
     #do cesar talking animation
+    print('got pathra speak')
+    global pathra_state
     pathra_state = 1
 
 # Define functions which animate LEDs in various ways.
 def fadeInOutRed(strip, wait_ms=50):
     """Wipe color across display a pixel at a time."""
+    print('in red')
+    global pathra_state
     pathra_state = 0
-    interval = 255
-    for j in range(3):
-        for z in range(0,interval):
-            color = Color(int(z,0,0))
+    for i in range(3):
+        for z in range(255,10):
+            color = Color(0,z,0)
             for i in range(strip.numPixels()):
                 strip.setPixelColor(i, color)
                 strip.show()
-                time.sleep(wait_ms/1000.0)
+                # time.sleep(wait_ms/1000.0)
                 # call user script
                 each_frame()
-        for y in range(interval,0):
-            color = Color(int(y,0,0))
+        for y in range(255,0,-10):
+            color = Color(0,y,0)
             for i in range(strip.numPixels()):
                 strip.setPixelColor(i, color)
                 strip.show()
-                time.sleep(wait_ms/1000.0)
+                # time.sleep(wait_ms/1000.0)
                 # call user script
                 each_frame()
 
-def fadeInOutWhite(strip, wait_ms=50):
-    """Wipe color across display a pixel at a time."""
-    interval = 255
-    for z in range(0,interval):
-        color = Color(int(z,0,0))
-        for i in range(strip.numPixels()):
-            if pathra_state == 1:
-                fadeInOutRed()
-            strip.setPixelColor(i, color)
+def fadeInOutWhite(strip, wait_ms=1):
+    fadeInWhite(strip)
+    fadeOutWhite(strip)
+
+def fadeOutWhite(strip, wait_ms=1):
+    global pathra_state
+    print('out')
+    for y in range(255,0,-1):
+        ncolor = Color(y,y,y)
+        if pathra_state == 1:
+            fadeInOutRed(strip)
+        for j in range(strip.numPixels()):
+            strip.setPixelColor(j, ncolor)
             strip.show()
-            time.sleep(wait_ms/1000.0)
+            # time.sleep(wait_ms/1000.0)
             # call user script
             each_frame()
-    for y in range(interval,0):
-        color = Color(int(y,0,0))
+
+def fadeInWhite(strip, wait_ms=1):
+    global pathra_state
+    print('Fading white in')
+    for z in range(255):
+        color = Color(z,z,z)
+        if pathra_state == 1:
+            fadeInOutRed(strip)
         for i in range(strip.numPixels()):
-            if pathra_state == 1:
-                fadeInOutRed()
             strip.setPixelColor(i, color)
             strip.show()
-            time.sleep(wait_ms/1000.0)
+            # time.sleep(wait_ms/1000.0)
             # call user script
+            #print('before each frame white')
             each_frame()
 
 def colorWipe(strip, color, wait_ms=50):
@@ -158,8 +169,8 @@ def each_frame():
     # clear timed_out flag
     server.timed_out = False
     # handle all pending requests then return
-    while not server.timed_out:
-        server.handle_request()
+    # while not server.timed_out:
+    server.handle_request()
 
 # Main program logic follows:
 if __name__ == '__main__':
@@ -169,6 +180,7 @@ if __name__ == '__main__':
     parser.add_argument("--ip", default="127.0.0.1", help="The ip to listen on")
     parser.add_argument("--port", type=int, default=5005, help="The port to listen on")
     args = parser.parse_args()
+    server = OSCServer( ("localhost", 5005) )
     server.addMsgHandler( "/pathraspeak", handle_speak )
     server.timeout = 0
     run = True
@@ -177,11 +189,13 @@ if __name__ == '__main__':
     strip = Adafruit_NeoPixel(LED_COUNT, LED_PIN, LED_FREQ_HZ, LED_DMA, LED_INVERT, LED_BRIGHTNESS, LED_CHANNEL)
     # Intialize the library (must be called once before other functions).
     strip.begin()
+    colorWipe(strip, Color(0,0,0), 10)
 
     print ('Press Ctrl-C to quit.')
     if not args.clear:
         print('Use "-c" argument to clear LEDs on exit')
 
+    print('In main')
     try:
 
         # while True:
@@ -201,13 +215,14 @@ if __name__ == '__main__':
 
         # simulate a "game engine"
         while run:
+            global pathra_state
             # do the game stuff:
-                if pathra_state == 1 :
-                    fadeInOutRed(strip)
-                else if pathra_state == 0:
-                    fadeInOutWhite(strip)
+            if pathra_state == 1 :
+                fadeInOutRed(strip)
+            elif pathra_state == 0:
+                fadeInOutWhite(strip)
 
-server.close()
+	server.close()
 
 
     except KeyboardInterrupt:
