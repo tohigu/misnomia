@@ -21,7 +21,7 @@ LED_DMA        = 10      # DMA channel to use for generating signal (try 10)
 LED_BRIGHTNESS = 255     # Set to 0 for darkest and 255 for brightest
 LED_INVERT     = False   # True to invert the signal (when using NPN transistor level shift)
 LED_CHANNEL    = 0       # set to '1' for GPIOs 13, 19, 41, 45 or 53
-pathra_state   = 0         # 0 => Standby 1 => speak TODO: 2 => listen 3 => unknown_fallback
+pathra_state   = 1       # 0 => Standby 1 => speak TODO: 2 => listen 3 => unknown_fallback
 
 #OSC handlers
 def handle_speak(path, tags, args, source):
@@ -34,13 +34,13 @@ def handle_unknown(path, tags, args, source):
     #do cesar talking animation
     print('got pathra unknown')
     global pathra_state
-    pathra_state = 1
+    pathra_state = 3
 
 def handle_listening_start(path, tags, args, source):
     #do cesar talking animation
     print('got pathra awoken')
     global pathra_state
-    pathra_state = 3
+    pathra_state = 1
 
 def handle_listenin_end(path, tags, args, source):
     #do cesar talking animation
@@ -52,13 +52,15 @@ def run_lights():
     global pathra_state
     fs = 1000
     #get millisecond part of cur. time in millis
-    x = int(round(time.time() * fs)) % fs
-    f = (pathra_state + 1) # Should come out as pulses per second
+    x = round(time.time() * fs) % fs
+    f = pathra_state # Should come out as pulses per second
     # compute the value (amplitude) of the sin wave at the for each sample
     # given sample rate and frequency and current time (x)
-    y =  ((np.sin(2*np.pi*f * (x/fs))) + 1) /2
+    y = np.sin(2*np.pi*f * (x/fs))
+    y = (y + 1) / 2
     #got amplitude, do lights
     light_amp = int(y * 255)
+    print(light_amp)
     color = Color(0,light_amp,0) if pathra_state == 1 else Color(light_amp,light_amp,light_amp)
     color = Color(0,light_amp,light_amp) if pathra_state == 2 else Color(light_amp,light_amp,light_amp)
     color = Color(light_amp,light_amp,0) if pathra_state == 3 else Color(light_amp,light_amp,light_amp)
