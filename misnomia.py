@@ -58,7 +58,7 @@ def run_lights():
     # given sample rate and frequency and current time (x)
     y =  ((np.sin(2*np.pi*f * (x/fs))) + 1) /2
     #got amplitude, do lights
-    light_amp = math.floor(y * 255)
+    light_amp = int(y * 255)
     color = Color(0,light_amp,0) if pathra_state == 1 else Color(light_amp,light_amp,light_amp)
     color = Color(0,light_amp,light_amp) if pathra_state == 2 else Color(light_amp,light_amp,light_amp)
     color = Color(light_amp,light_amp,0) if pathra_state == 3 else Color(light_amp,light_amp,light_amp)
