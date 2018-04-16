@@ -6,11 +6,11 @@
 # various animations on a strip of NeoPixels.
 
 import time
+import math
 from neopixel import *
 import argparse
 from OSC import OSCServer
-
-
+import numpy as np
 
 # LED strip configuration:
 LED_COUNT      = 16      # Number of LED pixels.
@@ -48,175 +48,196 @@ def handle_listenin_end(path, tags, args, source):
     global pathra_state
     pathra_state = 1
 
-# Define functions which animate LEDs in various ways.
-def fadeInOutRed(strip, wait_ms=50):
-    """Wipe color across display a pixel at a time."""
-    print('in red')
+def run_lights():
     global pathra_state
-    pathra_state = 0
-    for i in range(3):
-        for z in range(255,10):
-            color = Color(0,z,0)
-            for i in range(strip.numPixels()):
-                strip.setPixelColor(i, color)
-                strip.show()
-                # time.sleep(wait_ms/1000.0)
-                # call user script
-                each_frame()
-        for y in range(255,0,-10):
-            color = Color(0,y,0)
-            for i in range(strip.numPixels()):
-                strip.setPixelColor(i, color)
-                strip.show()
-                # time.sleep(wait_ms/1000.0)
-                # call user script
-                each_frame()
-
-
-# Define functions which animate LEDs in various ways.
-def fadeInOutPurple(strip, wait_ms=50):
-    """Wipe color across display a pixel at a time."""
-    print('in red')
-    global pathra_state
-    pathra_state = 0
-    for i in range(3):
-        for z in range(255,10):
-            color = Color(0,z,z)
-            for i in range(strip.numPixels()):
-                strip.setPixelColor(i, color)
-                strip.show()
-                # time.sleep(wait_ms/1000.0)
-                # call user script
-                each_frame()
-        for y in range(255,0,-10):
-            color = Color(0,y,y)
-            for i in range(strip.numPixels()):
-                strip.setPixelColor(i, color)
-                strip.show()
-                # time.sleep(wait_ms/1000.0)
-                # call user script
-                each_frame()
-
-# Define functions which animate LEDs in various ways.
-def fadeInOutYellow(strip, wait_ms=50):
-    """Wipe color across display a pixel at a time."""
-    print('in red')
-    global pathra_state
-    pathra_state = 0
-    for i in range(3):
-        for z in range(255,10):
-            color = Color(z,z,0)
-            for i in range(strip.numPixels()):
-                strip.setPixelColor(i, color)
-                strip.show()
-                # time.sleep(wait_ms/1000.0)
-                # call user script
-                each_frame()
-        for y in range(255,0,-10):
-            color = Color(y,y,0)
-            for i in range(strip.numPixels()):
-                strip.setPixelColor(i, color)
-                strip.show()
-                # time.sleep(wait_ms/1000.0)
-                # call user script
-                each_frame()
-
-def fadeInOutWhite(strip, wait_ms=1):
-    fadeInWhite(strip)
-    fadeOutWhite(strip)
-
-def fadeOutWhite(strip, wait_ms=1):
-    global pathra_state
-    print('out')
-    for y in range(255,0,-1):
-        ncolor = Color(y,y,y)
-        if pathra_state == 1:
-            fadeInOutRed(strip)
-        elif pathra_state == 2:
-            fadeInOutPurple(strip)
-        elif pathra_state == 3:
-            fadeInOutYellow(strip)
-        for j in range(strip.numPixels()):
-            strip.setPixelColor(j, ncolor)
-            strip.show()
-            # time.sleep(wait_ms/1000.0)
-            # call user script
-            each_frame()
-
-def fadeInWhite(strip, wait_ms=1):
-    global pathra_state
-    print('Fading white in')
-    for z in range(255):
-        color = Color(z,z,z)
-        if pathra_state == 1:
-            fadeInOutRed(strip)
-        elif pathra_state == 2:
-            fadeInOutPurple(strip)
-        elif pathra_state == 3:
-            fadeInOutYellow(strip)
-        for i in range(strip.numPixels()):
-            strip.setPixelColor(i, color)
-            strip.show()
-            # time.sleep(wait_ms/1000.0)
-            # call user script
-            #print('before each frame white')
-            each_frame()
-
-def colorWipe(strip, color, wait_ms=50):
-    """Wipe color across display a pixel at a time."""
+    fs = 1000
+    #get millisecond part of cur. time in millis
+    x = int(round(time.time() * fs)) % fs
+    f = (pathra_state + 1) # Should come out as pulses per second
+    # compute the value (amplitude) of the sin wave at the for each sample
+    # given sample rate and frequency and current time (x)
+    y =  ((np.sin(2*np.pi*f * (x/fs))) + 1) /2
+    #got amplitude, do lights
+    light_amp = math.floor(y * 255)
+    color = Color(0,light_amp,0) if pathra_state == 1 else Color(light_amp,light_amp,light_amp)
+    color = Color(0,light_amp,light_amp) if pathra_state == 2 else Color(light_amp,light_amp,light_amp)
+    color = Color(light_amp,light_amp,0) if pathra_state == 3 else Color(light_amp,light_amp,light_amp)
     for i in range(strip.numPixels()):
         strip.setPixelColor(i, color)
         strip.show()
-        time.sleep(wait_ms/1000.0)
+        # time.sleep(wait_ms/1000.0)
+        # call user script
+        each_frame()
 
-def theaterChase(strip, color, wait_ms=50, iterations=10):
-    """Movie theater light style chaser animation."""
-    for j in range(iterations):
-        for q in range(3):
-            for i in range(0, strip.numPixels(), 3):
-                strip.setPixelColor(i+q, color)
-            strip.show()
-            time.sleep(wait_ms/1000.0)
-            for i in range(0, strip.numPixels(), 3):
-                strip.setPixelColor(i+q, 0)
-
-def wheel(pos):
-    """Generate rainbow colors across 0-255 positions."""
-    if pos < 85:
-        return Color(pos * 3, 255 - pos * 3, 0)
-    elif pos < 170:
-        pos -= 85
-        return Color(255 - pos * 3, 0, pos * 3)
-    else:
-        pos -= 170
-        return Color(0, pos * 3, 255 - pos * 3)
-
-def rainbow(strip, wait_ms=20, iterations=1):
-    """Draw rainbow that fades across all pixels at once."""
-    for j in range(256*iterations):
-        for i in range(strip.numPixels()):
-            strip.setPixelColor(i, wheel((i+j) & 255))
-        strip.show()
-        time.sleep(wait_ms/1000.0)
-
-def rainbowCycle(strip, wait_ms=20, iterations=5):
-    """Draw rainbow that uniformly distributes itself across all pixels."""
-    for j in range(256*iterations):
-        for i in range(strip.numPixels()):
-            strip.setPixelColor(i, wheel((int(i * 256 / strip.numPixels()) + j) & 255))
-        strip.show()
-        time.sleep(wait_ms/1000.0)
-
-def theaterChaseRainbow(strip, wait_ms=50):
-    """Rainbow movie theater light style chaser animation."""
-    for j in range(256):
-        for q in range(3):
-            for i in range(0, strip.numPixels(), 3):
-                strip.setPixelColor(i+q, wheel((i+j) % 255))
-            strip.show()
-            time.sleep(wait_ms/1000.0)
-            for i in range(0, strip.numPixels(), 3):
-                strip.setPixelColor(i+q, 0)
+# # Define functions which animate LEDs in various ways.
+# def fadeInOutRed(strip, wait_ms=50):
+#     """Wipe color across display a pixel at a time."""
+#     print('in red')
+#     global pathra_state
+#     pathra_state = 0
+#     for i in range(3):
+#         for z in range(255,10):
+#             color = Color(0,z,0)
+#             for i in range(strip.numPixels()):
+#                 strip.setPixelColor(i, color)
+#                 strip.show()
+#                 # time.sleep(wait_ms/1000.0)
+#                 # call user script
+#                 each_frame()
+#         for y in range(255,0,-10):
+#             color = Color(0,y,0)
+#             for i in range(strip.numPixels()):
+#                 strip.setPixelColor(i, color)
+#                 strip.show()
+#                 # time.sleep(wait_ms/1000.0)
+#                 # call user script
+#                 each_frame()
+#
+#
+# # Define functions which animate LEDs in various ways.
+# def fadeInOutPurple(strip, wait_ms=50):
+#     """Wipe color across display a pixel at a time."""
+#     print('in red')
+#     global pathra_state
+#     pathra_state = 0
+#     for i in range(3):
+#         for z in range(255,10):
+#             color = Color(0,z,z)
+#             for i in range(strip.numPixels()):
+#                 strip.setPixelColor(i, color)
+#                 strip.show()
+#                 # time.sleep(wait_ms/1000.0)
+#                 # call user script
+#                 each_frame()
+#         for y in range(255,0,-10):
+#             color = Color(0,y,y)
+#             for i in range(strip.numPixels()):
+#                 strip.setPixelColor(i, color)
+#                 strip.show()
+#                 # time.sleep(wait_ms/1000.0)
+#                 # call user script
+#                 each_frame()
+#
+# # Define functions which animate LEDs in various ways.
+# def fadeInOutYellow(strip, wait_ms=50):
+#     """Wipe color across display a pixel at a time."""
+#     print('in red')
+#     global pathra_state
+#     pathra_state = 0
+#     for i in range(3):
+#         for z in range(255,10):
+#             color = Color(z,z,0)
+#             for i in range(strip.numPixels()):
+#                 strip.setPixelColor(i, color)
+#                 strip.show()
+#                 # time.sleep(wait_ms/1000.0)
+#                 # call user script
+#                 each_frame()
+#         for y in range(255,0,-10):
+#             color = Color(y,y,0)
+#             for i in range(strip.numPixels()):
+#                 strip.setPixelColor(i, color)
+#                 strip.show()
+#                 # time.sleep(wait_ms/1000.0)
+#                 # call user script
+#                 each_frame()
+#
+# def fadeInOutWhite(strip, wait_ms=1):
+#     fadeInWhite(strip)
+#     fadeOutWhite(strip)
+#
+# def fadeOutWhite(strip, wait_ms=1):
+#     global pathra_state
+#     print('out')
+#     for y in range(255,0,-1):
+#         ncolor = Color(y,y,y)
+#         if pathra_state == 1:
+#             fadeInOutRed(strip)
+#         elif pathra_state == 2:
+#             fadeInOutPurple(strip)
+#         elif pathra_state == 3:
+#             fadeInOutYellow(strip)
+#         for j in range(strip.numPixels()):
+#             strip.setPixelColor(j, ncolor)
+#             strip.show()
+#             # time.sleep(wait_ms/1000.0)
+#             # call user script
+#             each_frame()
+#
+# def fadeInWhite(strip, wait_ms=1):
+#     global pathra_state
+#     print('Fading white in')
+#     for z in range(255):
+#         color = Color(z,z,z)
+#         if pathra_state == 1:
+#             fadeInOutRed(strip)
+#         elif pathra_state == 2:
+#             fadeInOutPurple(strip)
+#         elif pathra_state == 3:
+#             fadeInOutYellow(strip)
+#         for i in range(strip.numPixels()):
+#             strip.setPixelColor(i, color)
+#             strip.show()
+#             # time.sleep(wait_ms/1000.0)
+#             # call user script
+#             #print('before each frame white')
+#             each_frame()
+#
+# def colorWipe(strip, color, wait_ms=50):
+#     """Wipe color across display a pixel at a time."""
+#     for i in range(strip.numPixels()):
+#         strip.setPixelColor(i, color)
+#         strip.show()
+#         time.sleep(wait_ms/1000.0)
+#
+# def theaterChase(strip, color, wait_ms=50, iterations=10):
+#     """Movie theater light style chaser animation."""
+#     for j in range(iterations):
+#         for q in range(3):
+#             for i in range(0, strip.numPixels(), 3):
+#                 strip.setPixelColor(i+q, color)
+#             strip.show()
+#             time.sleep(wait_ms/1000.0)
+#             for i in range(0, strip.numPixels(), 3):
+#                 strip.setPixelColor(i+q, 0)
+#
+# def wheel(pos):
+#     """Generate rainbow colors across 0-255 positions."""
+#     if pos < 85:
+#         return Color(pos * 3, 255 - pos * 3, 0)
+#     elif pos < 170:
+#         pos -= 85
+#         return Color(255 - pos * 3, 0, pos * 3)
+#     else:
+#         pos -= 170
+#         return Color(0, pos * 3, 255 - pos * 3)
+#
+# def rainbow(strip, wait_ms=20, iterations=1):
+#     """Draw rainbow that fades across all pixels at once."""
+#     for j in range(256*iterations):
+#         for i in range(strip.numPixels()):
+#             strip.setPixelColor(i, wheel((i+j) & 255))
+#         strip.show()
+#         time.sleep(wait_ms/1000.0)
+#
+# def rainbowCycle(strip, wait_ms=20, iterations=5):
+#     """Draw rainbow that uniformly distributes itself across all pixels."""
+#     for j in range(256*iterations):
+#         for i in range(strip.numPixels()):
+#             strip.setPixelColor(i, wheel((int(i * 256 / strip.numPixels()) + j) & 255))
+#         strip.show()
+#         time.sleep(wait_ms/1000.0)
+#
+# def theaterChaseRainbow(strip, wait_ms=50):
+#     """Rainbow movie theater light style chaser animation."""
+#     for j in range(256):
+#         for q in range(3):
+#             for i in range(0, strip.numPixels(), 3):
+#                 strip.setPixelColor(i+q, wheel((i+j) % 255))
+#             strip.show()
+#             time.sleep(wait_ms/1000.0)
+#             for i in range(0, strip.numPixels(), 3):
+#                 strip.setPixelColor(i+q, 0)
 
 def user_callback(path, tags, args, source):
     # which user will be determined by path:
@@ -292,16 +313,17 @@ if __name__ == '__main__':
 
         # simulate a "game engine"
         while run:
-            global pathra_state
-            # do the game stuff:
-            if pathra_state == 1 :
-                fadeInOutRed(strip)
-            if pathra_state == 2 :
-                fadeInOutPurple(strip)
-            if pathra_state == 3 :
-                fadeInOutYellow(strip)
-            elif pathra_state == 0:
-                fadeInOutWhite(strip)
+            # global pathra_status
+            # # do the game stuff:
+            # if pathra_state == 1 :
+            #     fadeInOutRed(strip)
+            # if pathra_state == 2 :
+            #     fadeInOutPurple(strip)
+            # if pathra_state == 3 :
+            #     fadeInOutYellow(strip)
+            # elif pathra_state == 0:
+            #     fadeInOutWhite(strip)
+            run_lights()
 
 	server.close()
 
