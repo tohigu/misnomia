@@ -28,6 +28,24 @@ def handle_speak(path, tags, args, source):
     #do cesar talking animation
     print('got pathra speak')
     global pathra_state
+    pathra_state = 2
+
+def handle_unknown(path, tags, args, source):
+    #do cesar talking animation
+    print('got pathra unknown')
+    global pathra_state
+    pathra_state = 1
+
+def handle_listening_start(path, tags, args, source):
+    #do cesar talking animation
+    print('got pathra awoken')
+    global pathra_state
+    pathra_state = 3
+
+def handle_listenin_end(path, tags, args, source):
+    #do cesar talking animation
+    print('got pathra speak')
+    global pathra_state
     pathra_state = 1
 
 # Define functions which animate LEDs in various ways.
@@ -54,6 +72,55 @@ def fadeInOutRed(strip, wait_ms=50):
                 # call user script
                 each_frame()
 
+
+# Define functions which animate LEDs in various ways.
+def fadeInOutPurple(strip, wait_ms=50):
+    """Wipe color across display a pixel at a time."""
+    print('in red')
+    global pathra_state
+    pathra_state = 0
+    for i in range(3):
+        for z in range(255,10):
+            color = Color(0,z,z)
+            for i in range(strip.numPixels()):
+                strip.setPixelColor(i, color)
+                strip.show()
+                # time.sleep(wait_ms/1000.0)
+                # call user script
+                each_frame()
+        for y in range(255,0,-10):
+            color = Color(0,y,y)
+            for i in range(strip.numPixels()):
+                strip.setPixelColor(i, color)
+                strip.show()
+                # time.sleep(wait_ms/1000.0)
+                # call user script
+                each_frame()
+
+# Define functions which animate LEDs in various ways.
+def fadeInOutYellow(strip, wait_ms=50):
+    """Wipe color across display a pixel at a time."""
+    print('in red')
+    global pathra_state
+    pathra_state = 0
+    for i in range(3):
+        for z in range(255,10):
+            color = Color(z,z,0)
+            for i in range(strip.numPixels()):
+                strip.setPixelColor(i, color)
+                strip.show()
+                # time.sleep(wait_ms/1000.0)
+                # call user script
+                each_frame()
+        for y in range(255,0,-10):
+            color = Color(y,y,0)
+            for i in range(strip.numPixels()):
+                strip.setPixelColor(i, color)
+                strip.show()
+                # time.sleep(wait_ms/1000.0)
+                # call user script
+                each_frame()
+
 def fadeInOutWhite(strip, wait_ms=1):
     fadeInWhite(strip)
     fadeOutWhite(strip)
@@ -65,6 +132,10 @@ def fadeOutWhite(strip, wait_ms=1):
         ncolor = Color(y,y,y)
         if pathra_state == 1:
             fadeInOutRed(strip)
+        elif pathra_state == 2:
+            fadeInOutPurple(strip)
+        elif pathra_state == 3:
+            fadeInOutYellow(strip)
         for j in range(strip.numPixels()):
             strip.setPixelColor(j, ncolor)
             strip.show()
@@ -79,6 +150,10 @@ def fadeInWhite(strip, wait_ms=1):
         color = Color(z,z,z)
         if pathra_state == 1:
             fadeInOutRed(strip)
+        elif pathra_state == 2:
+            fadeInOutPurple(strip)
+        elif pathra_state == 3:
+            fadeInOutYellow(strip)
         for i in range(strip.numPixels()):
             strip.setPixelColor(i, color)
             strip.show()
@@ -182,6 +257,8 @@ if __name__ == '__main__':
     args = parser.parse_args()
     server = OSCServer( ("localhost", 5005) )
     server.addMsgHandler( "/pathraspeak", handle_speak )
+    server.addMsgHandler( "/unknown", handle_unknown )
+    server.addMsgHandler( "/awoken", handle_listening_start )
     server.timeout = 0
     run = True
 
@@ -219,6 +296,10 @@ if __name__ == '__main__':
             # do the game stuff:
             if pathra_state == 1 :
                 fadeInOutRed(strip)
+            if pathra_state == 2 :
+                fadeInOutPurple(strip)
+            if pathra_state == 3 :
+                fadeInOutYellow(strip)
             elif pathra_state == 0:
                 fadeInOutWhite(strip)
 

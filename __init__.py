@@ -9,8 +9,11 @@
 
 from adapt.intent import IntentBuilder
 from mycroft.skills.core import MycroftSkill, intent_handler
-from mycroft.util.log import LOG
+from mycroft.messagebus.message import Message
+from mycroft.util.log import getLogger
 from OSC import OSCClient, OSCMessage
+
+logger = getLogger(__name__)
 
 # Each skill is contained within its own class, which inherits base methods
 # from the MycroftSkill class.  You extend this class as shown below.
@@ -21,9 +24,14 @@ class Misnomia(MycroftSkill):
     # The constructor of the skill, which calls MycroftSkill's constructor
     def __init__(self):
         super(Misnomia, self).__init__(name="Misnomia")
-
-        # Initialize working variables used within the skill.
         self.count = 0
+    def initialize(self):
+        logger.info('Initializing dialogical_net...')
+        self._register_event_handlers()
+
+    def _register_event_handlers(self):
+        self.add_event('recognizer_loop:wakeword', self.handle_awoken)
+        logger.info('registering event...')
 
     # The "handle_xxxx_intent" function is triggered by Mycroft when the
     # skill's intent is matched.  The intent is defined by the IntentBuilder()
@@ -65,10 +73,17 @@ class Misnomia(MycroftSkill):
         self.pathra_speak("end.delete.protocol")
 
     def pathra_speak(self,message):
+        logger.info('Pathra speaks!')
         client = OSCClient()
         client.connect( ("localhost", 5005) )
         client.send( OSCMessage("/pathraspeak"))
         self.speak_dialog(message)
+
+    def handle_awoken(self):
+        logger.info('Misnomia Awoke!')
+        client = OSCClient()
+        client.connect( ("localhost", 5005) )
+        client.send( OSCMessage("/awoken"))
 
     # The "stop" method defines what Mycroft does when told to stop during
     # the skill's execution. In this case, since the skill's functionality
