@@ -69,6 +69,13 @@ def run_lights():
         # call user script
         each_frame()
 
+def colorWipe(strip, color, wait_ms=50):
+    """Wipe color across display a pixel at a time."""
+    for i in range(strip.numPixels()):
+        strip.setPixelColor(i, color)
+        strip.show()
+        time.sleep(wait_ms/1000.0)
+
 # # Define functions which animate LEDs in various ways.
 # def fadeInOutRed(strip, wait_ms=50):
 #     """Wipe color across display a pixel at a time."""
@@ -182,13 +189,6 @@ def run_lights():
 #             # call user script
 #             #print('before each frame white')
 #             each_frame()
-#
-# def colorWipe(strip, color, wait_ms=50):
-#     """Wipe color across display a pixel at a time."""
-#     for i in range(strip.numPixels()):
-#         strip.setPixelColor(i, color)
-#         strip.show()
-#         time.sleep(wait_ms/1000.0)
 #
 # def theaterChase(strip, color, wait_ms=50, iterations=10):
 #     """Movie theater light style chaser animation."""
