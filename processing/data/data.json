@@ -1,0 +1,22 @@
+[
+   {
+     "id": 1,
+     "txt": "Capra hircus",
+     "audio": "lvl1.mp3"
+   },
+   {
+     "id": 2,
+     "txt": "Panthera pardus",
+     "audio": "lvl2.mp3"
+   },
+   {
+     "id": 3,
+     "txt": "Equus zebra",
+     "audio": "lvl3.mp3"
+   },
+   {
+     "id": 4,
+     "txt": "Equus zebra",
+     "audio": "ending.mp3"
+   }
+ ]
