@@ -123,7 +123,7 @@ if __name__ == '__main__':
     parser.add_argument("--port", type=int, default=5005,
                         help="The port to listen on")
     args = parser.parse_args()
-    server = OSCServer("localhost", 5005)
+    server = OSCServer(("localhost", 5006))
     server.addMsgHandler("/pathraspeak", handle_speak)
     server.addMsgHandler("/unknown", handle_unknown)
     server.addMsgHandler("/awoken", handle_listening_start)
@@ -147,8 +147,8 @@ if __name__ == '__main__':
         while run:
             run_lights()
 
-    server.close()
-
     except KeyboardInterrupt:
         if args.clear:
             colorWipe(strip, Color(0, 0, 0), 10)
+
+    server.close()
