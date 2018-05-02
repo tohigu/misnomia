@@ -11,7 +11,7 @@ from adapt.intent import IntentBuilder
 from mycroft.skills.core import MycroftSkill, intent_handler
 from mycroft.messagebus.message import Message
 from mycroft.util.log import getLogger
-from OSC import OSCClient, OSCMessage, OSCServer
+from OSC import *
 
 logger = getLogger(__name__)
 
@@ -25,13 +25,13 @@ class Misnomia(MycroftSkill):
     def __init__(self):
         super(Misnomia, self).__init__(name="Misnomia")
         self.level = 1
-        self.server = OSCServer("localhost", 5005)
-        self.server.addMsgHandler("/disable", handle_disable)
-        self.server.addMsgHandler("/enable", handle_enable)
+        self.server = OSCServer(('127.0.0.1', 5005))
         self.client = OSCClient()
-        self.client.connect("localhost", 5005)
+        self.client.connect(('127.0.0.1', 5006))
         self.processing = OSCClient()
-        self.processing.connect("localhost", 5006)
+        self.processing.connect(('10.115.139.32', 5006))
+        self.server.addMsgHandler("/disable", self.handle_disable)
+        self.server.addMsgHandler("/enable", self.handle_enable)
         self.enabled = False
 
     def initialize(self):
@@ -112,28 +112,46 @@ class Misnomia(MycroftSkill):
     def nextLevel(self, lvl):
         self.level = lvl
         logger.info('Next Level! ' + self.level)
-        self.processing.send(OSCMessage("/level", self.level))
+	msg = OSCMessage()
+	msg.setAddress("/level")
+	msg.append(self.level)
+        self.client.send(msg)
+        self.processing.send(msg)
         self.speak_dialog(message)
 
     def reset(self):
         self.level = 1
         logger.info('Reset!' + self.level)
-        self.client.send(OSCMessage("/level", self.level))
+	msg = OSCMessage()
+	msg.setAddress("/level")
+	msg.append(self.level)
+        self.client.send(msg)
         self.speak_dialog(message)
 
     def pathra_speak(self, message):
         logger.info('Pathra speaks!')
-        self.client.send(OSCMessage("/pathraspeak", message))
-        self.processing.send(OSCMessage("/pathraspeak", message))
+	msg = OSCMessage()
+	msg.setAddress("/pathraspeak")
+	msg.append(message.utterance)
+        self.client.send(msg)
+        self.processing.send(msg)
         self.speak_dialog(message)
 
     def handle_awoken(self, event):
         logger.info('Misnomia Awoke!')
-        self.client.send(OSCMessage("/awoken", event))
+        logger.info(event.serialize())
+	msg = OSCMessage()
+	msg.setAddress("/awoken")
+	msg.append("1")
+        self.client.send(msg)
 
     def handle_utterance(self, event):
         logger.info('player spoke!')
-        self.processing.send(OSCMessage("/playerspeak", event))
+	logger.info(event.data["utterances"][0])
+	msg = OSCMessage()
+	msg.setAddress("/playerspeak")
+	msg.append(event.data["utterances"][0])
+        self.processing.send(msg)
 
     def handle_disable(self, event):
         logger.info('pathra disabled!')
