@@ -37,21 +37,28 @@ void draw() {
 }
 
 void oscEvent(OscMessage theOscMessage) {
+  print(theOscMessage);
   if (theOscMessage.addrPattern().equals(levelPattern)) {
+    Object args[] = theOscMessage.arguments();
+    int idx = (int)args[0];
     //Got next level, play sound and display text
-    SoundFile sound = new SoundFile(this, transitions[theOscMessage.arguments[0]].sound);
-    String txt = transitions[theOscMessage.arguments[0]].txt;
+    JSONObject obj = transitions.getJSONObject(idx);
+    SoundFile sound = new SoundFile(this, obj.getString("sound"));
+    String txt =  obj.getString("txt");
     textsToDisplay.clear();
     textsToDisplay.append(txt);
     sound.play();
-
   }
   else if (theOscMessage.addrPattern().equals(pathraWordsPattern)) {
-    updateText(theOscMessage.arguments[0]);
+    Object args[] = theOscMessage.arguments();
+    String txt = (String)args[0];
+    updateText(txt);
 
   }
   else if (theOscMessage.addrPattern().equals(playerWordsPattern)) {
-    textsToDisplay.append(theOscMessage.arguments[0]);
+    Object args[] = theOscMessage.arguments();
+    String txt = (String)args[0];
+    updateText(txt);
 
   }
 }
